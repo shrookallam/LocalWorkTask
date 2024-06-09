@@ -34,15 +34,21 @@ class OrderController extends Controller
 
     public function customerReport(Request $request ){
         $ordersOfCustomer= Order::where('customer_id',$request->id)->pluck('id')->toArray();
-        $productsQuantity= order_details::whereIn('order_id',$ordersOfCustomer)->pluck('quantity')->toArray();
-        $products= order_details::whereIn('order_id',$ordersOfCustomer)->pluck('product_id')->toArray();
-        $productsDetails=new ProductResource(Product::whereIn('id',$products)->with('orders')->get());
-        $totalPayments=Order::whereIn('id',$ordersOfCustomer)->sum('total');
-        $countOfProducts=array_sum($productsQuantity);
-        $orderDetail= new OrderResource(Order::whereIn('id',$ordersOfCustomer)->with('products','customers')->get());
-        $productsDetails=new ProductResource(Product::whereIn('id',$products)->with('orders')->get());
 
-       return $this->apiOrderResponse($countOfProducts,$totalPayments,$orderDetail,$productsDetails,'Done',200);
+         if(sizeof($ordersOfCustomer)){
+            $productsQuantity= order_details::whereIn('order_id',$ordersOfCustomer)->pluck('quantity')->toArray();
+            $products= order_details::whereIn('order_id',$ordersOfCustomer)->pluck('product_id')->toArray();
+            $productsDetails=new ProductResource(Product::whereIn('id',$products)->with('orders')->get());
+            $totalPayments=Order::whereIn('id',$ordersOfCustomer)->sum('total');
+            $countOfProducts=array_sum($productsQuantity);
+            $orderDetail= new OrderResource(Order::whereIn('id',$ordersOfCustomer)->with('products','customers')->get());
+            $productsDetails=new ProductResource(Product::whereIn('id',$products)->with('orders')->get());
+
+            return $this->apiOrderResponse($countOfProducts,$totalPayments,$orderDetail,$productsDetails,'Done',200);
+       }else{
+            return $this->apiResponseerror('This customer Not have any orders yet', 401);
+
+       }
 
     }
 
